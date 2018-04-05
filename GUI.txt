@@ -1,0 +1,1542 @@
+function varargout = DCM_GUI_4node_Model(varargin)
+% DCM_GUI_4node_Model MATLAB code for DCM_GUI_4node_Model.fig
+%      DCM_GUI_4node_Model, by itself, creates a new DCM_GUI_4node_Model or raises the existing
+%      singleton*.
+%
+%      H = DCM_GUI_4node_Model returns the handle to a new DCM_GUI_4node_Model or the handle to
+%      the existing singleton*.
+%
+%      DCM_GUI_4node_Model('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in DCM_GUI_4node_Model.M with the given input arguments.
+%
+%      DCM_GUI_4node_Model('Property','Value',...) creates a new DCM_GUI_4node_Model or raises the
+%      existing singleton*.  Starting from the left, property value pairs are
+%      applied to the GUI before DCM_GUI_4node_Model_OpeningFcn gets called.  An
+%      unrecognized property name or invalid value makes property application
+%      stop.  All inputs are passed to DCM_GUI_4node_Model_OpeningFcn via varargin.
+%
+%      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
+%      instance to run (singleton)".
+%
+% See also: GUIDE, GUIDATA, GUIHANDLES
+
+% Edit the above text to modify the response to help DCM_GUI_4node_Model
+
+% Last Modified by GUIDE v2.5 11-Feb-2018 20:09:45
+
+% Begin initialization code - DO NOT EDIT
+global orig_directory
+orig_directory=pwd;
+gui_Singleton = 1;
+global Patients_folder;
+global Controls_folder;
+gui_State = struct('gui_Name',       mfilename, ...
+                   'gui_Singleton',  gui_Singleton, ...
+                   'gui_OpeningFcn', @DCM_GUI_4node_Model_OpeningFcn, ...
+                   'gui_OutputFcn',  @DCM_GUI_4node_Model_OutputFcn, ...
+                   'gui_LayoutFcn',  [] , ...
+                   'gui_Callback',   []);
+if nargin && ischar(varargin{1})
+    gui_State.gui_Callback = str2func(varargin{1});
+end
+
+if nargout
+    [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+else
+    gui_mainfcn(gui_State, varargin{:});
+end
+% End initialization code - DO NOT EDIT
+
+
+% --- Executes just before DCM_GUI_4node_Model is made visible.
+function DCM_GUI_4node_Model_OpeningFcn(hObject, eventdata, handles, varargin)
+% This function has no output args, see OutputFcn.
+% hObject    handle to figure
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% varargin   command line arguments to DCM_GUI_4node_Model (see VARARGIN)
+
+% Choose default command line output for DCM_GUI_4node_Model
+handles.output = hObject;
+
+% Update handles structure
+guidata(hObject, handles);
+
+% UIWAIT makes DCM_GUI_4node_Model wait for user response (see UIRESUME)
+% uiwait(handles.figure1);
+
+
+% --- Outputs from this function are returned to the command line.
+function varargout = DCM_GUI_4node_Model_OutputFcn(hObject, eventdata, handles) 
+% varargout  cell array for returning output args (see VARARGOUT);
+% hObject    handle to figure
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Get default command line output from handles structure
+varargout{1} = handles.output;
+
+
+% --- Executes on button press in Load_Controls_PB.
+function Load_Controls_PB_Callback(hObject, eventdata, handles)
+% hObject    handle to Load_Controls_PB (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global Controls_folder controls_names orig_directory;
+Controls_folder=uigetdir('','Select Controls Folder');
+set(handles.Controls_data_path_Edit_Text, 'String', Controls_folder);
+controls_names=dir(Controls_folder);
+for i=3:length(controls_names)
+    cd(strcat(Controls_folder,'\',controls_names(i).name));
+    directory=strcat(Controls_folder,'\',controls_names(i).name);
+    mkdir GLM;
+    mkdir anat;
+    mkdir func;
+    fMRI_folder=find_folder(directory,'fMRI');
+    struct_folder=find_folder(directory,'BRAVO');
+    cd(strcat(directory,'\',fMRI_folder));
+    copyfile(strcat(directory,'\',fMRI_folder,'\swau*'),strcat(directory,'\func'));
+    copyfile(strcat(directory,'\',fMRI_folder,'\rp*'),strcat(directory,'\GLM'));
+    cd(strcat(directory,'\func'));
+    %delete *.hdr;
+    cd(strcat(directory,'\',struct_folder));
+    copyfile(strcat(directory,'\',struct_folder,'\wc',controls_names(i).name,'*'),strcat(directory,'\anat'));
+    cd(strcat(directory,'\anat'));
+    %delete *.hdr;
+end
+cd(orig_directory);
+
+function [folder_name]=find_folder(directory, search_text)
+global orig_directory;
+cd(directory);
+filenames=dir(directory);
+for i=3:length(filenames)
+    k=strfind(filenames(i).name,search_text);
+    if(~isempty(k))
+        folder_name=filenames(i).name;
+    end
+end
+cd(orig_directory);
+
+% --- Executes on button press in Load_Patients_PB.
+function Load_Patients_PB_Callback(hObject, eventdata, handles)
+% hObject    handle to Load_Patients_PB (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global Patients_folder;
+Patients_folder=uigetdir('','Select Controls Folder');
+set(handles.Patients_data_path_Edit_Text, 'String', Patients_folder);
+patients_names=dir(Patients_folder);
+
+
+function Controls_data_path_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to Controls_data_path_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of Controls_data_path_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of Controls_data_path_Edit_Text as a double
+set(handles.Controls_data_path_Edit_Text, 'String', Controls_folder);
+
+% --- Executes during object creation, after setting all properties.
+function Controls_data_path_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Controls_data_path_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function Patients_data_path_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to Patients_data_path_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of Patients_data_path_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of Patients_data_path_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+
+
+function Patients_data_path_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Patients_data_path_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function SLxCoordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to SLxCoordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of SLxCoordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of SLxCoordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function SLxCoordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to SLxCoordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function SL_y_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to SL_y_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of SL_y_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of SL_y_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function SL_y_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to SL_y_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function SLz_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to SLz_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of SLz_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of SLz_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function SLz_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to SLz_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function SRx_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to SRx_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of SRx_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of SRx_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function SRx_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to SRx_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function SRy_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to SRy_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of SRy_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of SRy_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function SRy_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to SRy_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function SRz_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to SRz_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of SRz_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of SRz_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function SRz_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to SRz_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function TLx_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to TLx_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of TLx_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of TLx_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function TLx_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to TLx_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function TL_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to TL_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of TL_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of TL_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function TL_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to TL_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function TLz_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to TLz_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of TLz_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of TLz_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function TLz_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to TLz_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function TR_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to TR_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of TR_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of TR_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function TR_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to TR_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function TRy_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to TRy_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of TRy_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of TRy_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function TRy_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to TRy_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function TRz_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to TRz_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of TRz_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of TRz_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function TRz_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to TRz_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function DLx_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to DLx_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of DLx_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of DLx_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function DLx_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to DLx_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function DLy_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to DLy_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of DLy_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of DLy_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function DLy_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to DLy_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function DLz_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to DLz_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of DLz_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of DLz_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function DLz_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to DLz_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function DRx_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to DRx_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of DRx_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of DRx_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function DRx_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to DRx_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function DRy_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to DRy_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of DRy_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of DRy_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function DRy_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to DRy_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function DRz_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to DRz_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of DRz_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of DRz_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function DRz_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to DRz_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function SL_Radius_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to SL_Radius_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of SL_Radius_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of SL_Radius_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function SL_Radius_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to SL_Radius_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit22_Callback(hObject, eventdata, handles)
+% hObject    handle to edit22 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit22 as text
+%        str2double(get(hObject,'String')) returns contents of edit22 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit22_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit22 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit23_Callback(hObject, eventdata, handles)
+% hObject    handle to edit23 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit23 as text
+%        str2double(get(hObject,'String')) returns contents of edit23 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit23_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit23 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit24_Callback(hObject, eventdata, handles)
+% hObject    handle to edit24 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit24 as text
+%        str2double(get(hObject,'String')) returns contents of edit24 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit24_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit24 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit25_Callback(hObject, eventdata, handles)
+% hObject    handle to edit25 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit25 as text
+%        str2double(get(hObject,'String')) returns contents of edit25 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit25_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit25 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit26_Callback(hObject, eventdata, handles)
+% hObject    handle to edit26 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit26 as text
+%        str2double(get(hObject,'String')) returns contents of edit26 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit26_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit26 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function STN_Lx_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to STN_Lx_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of STN_Lx_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of STN_Lx_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function STN_Lx_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to STN_Lx_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function STN_Ly_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to STN_Ly_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of STN_Ly_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of STN_Ly_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function STN_Ly_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to STN_Ly_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function STN_Lz_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to STN_Lz_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of STN_Lz_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of STN_Lz_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function STN_Lz_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to STN_Lz_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function STN_Rx_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to STN_Rx_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of STN_Rx_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of STN_Rx_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function STN_Rx_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to STN_Rx_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function STN_Ry_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to STN_Ry_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of STN_Ry_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of STN_Ry_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function STN_Ry_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to STN_Ry_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function STN_Rz_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to STN_Rz_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of STN_Rz_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of STN_Rz_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function STN_Rz_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to STN_Rz_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function PLx_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to PLx_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of PLx_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of PLx_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function PLx_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to PLx_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function PLy_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to PLy_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of PLy_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of PLy_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function PLy_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to PLy_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function PLz_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to PLz_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of PLz_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of PLz_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function PLz_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to PLz_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function PRx_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to PRx_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of PRx_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of PRx_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function PRx_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to PRx_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function PRy_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to PRy_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of PRy_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of PRy_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function PRy_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to PRy_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function PRz_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to PRz_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of PRz_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of PRz_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function PRz_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to PRz_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function CC7Lx_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to CC7Lx_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of CC7Lx_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of CC7Lx_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function CC7Lx_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to CC7Lx_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function CC7Ly_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to CC7Ly_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of CC7Ly_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of CC7Ly_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function CC7Ly_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to CC7Ly_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function CC7Lz_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to CC7Lz_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of CC7Lz_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of CC7Lz_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function CC7Lz_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to CC7Lz_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function CC7Rx_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to CC7Rx_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of CC7Rx_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of CC7Rx_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function CC7Rx_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to CC7Rx_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function CC7Ry_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to CC7Ry_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of CC7Ry_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of CC7Ry_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function CC7Ry_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to CC7Ry_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function CC7Rz_Coordinate_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to CC7Rz_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of CC7Rz_Coordinate_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of CC7Rz_Coordinate_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function CC7Rz_Coordinate_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to CC7Rz_Coordinate_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function STN_L_Radius_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to STN_L_Radius_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of STN_L_Radius_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of STN_L_Radius_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function STN_L_Radius_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to STN_L_Radius_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function STN_R_Radius_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to STN_R_Radius_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of STN_R_Radius_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of STN_R_Radius_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function STN_R_Radius_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to STN_R_Radius_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function PL_Radius_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to PL_Radius_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of PL_Radius_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of PL_Radius_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function PL_Radius_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to PL_Radius_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function PR_Radius_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to PR_Radius_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of PR_Radius_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of PR_Radius_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function PR_Radius_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to PR_Radius_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function CC7L_Radius_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to CC7L_Radius_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of CC7L_Radius_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of CC7L_Radius_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function CC7L_Radius_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to CC7L_Radius_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function CC7R_Radius_Edit_Text_Callback(hObject, eventdata, handles)
+% hObject    handle to CC7R_Radius_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of CC7R_Radius_Edit_Text as text
+%        str2double(get(hObject,'String')) returns contents of CC7R_Radius_Edit_Text as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function CC7R_Radius_Edit_Text_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to CC7R_Radius_Edit_Text (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in Start_DCM_N1_PB.
+function Start_DCM_N1_PB_Callback(hObject, eventdata, handles)
+% hObject    handle to Start_DCM_N1_PB (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% List of open inputs
+global Patients_folder patients_names Controls_folder controls_names orig_directory regions;
+cd(orig_directory);
+region_1='LIPC';
+region_2='RIPC';
+region_3='PCC';
+region_4='mPFC';
+regions={region_1;region_2;region_3;region_4};
+for i=3:length(controls_names)                  
+    job_create('GLM_Define',i,'Controls',0);                        %If the job is time series extraction of ROIs, pass the last argument as 1, else 0
+    job_create('CSF_Extract',i,'Controls',0);
+    job_create('Adjust_SPM_with_Covariates',i,'Controls',0)
+    job_create(region_1,i,'Controls',1);
+    job_create(region_2,i,'Controls',1);
+    job_create(region_3,i,'Controls',1);
+    job_create(region_4,i,'Controls',1);
+end
+for i=3:length(controls_names)
+    job_create('Specify_Model',i,'Controls',0);
+    job_create('Estimate_DCM',i,'Controls',0);
+end
+
+function job_create(job_name,i,group,time_extract)
+global Controls_folder controls_names orig_directory Patients_folder patients_names;
+if(strcmp(group,'Controls'))
+    directory=strcat(Controls_folder,'\',controls_names(i).name);
+elseif(strcmp(group,'Patients'))
+    directory=strcat();
+end
+if(time_extract==0)
+    if(strcmp(job_name,'GLM_Define'))
+        job_file_name=strcat(directory,'\GLM\Batch_Define_GLM_',controls_names(i).name,'_job.m');
+        GLM_Define(job_file_name,directory);
+    elseif(strcmp(job_name,'CSF_Extract'))
+        job_file_name=strcat(directory,'\GLM\Batch_CSF_Extract_',controls_names(i).name,'_job.m');
+        CSF_Extract(job_file_name,directory);
+    elseif(strcmp(job_name,'Adjust_SPM_with_Covariates'))
+        job_file_name=strcat(directory,'\GLM\Batch_Adjust_SPM_',controls_names(i).name,'_job.m');
+        Adjust_SPM(job_file_name,directory);
+    elseif(strcmp(job_name,'Specify_Model'))
+        Specify_DCM_Models(directory);
+        return;
+    elseif(strcmp(job_name,'Estimate_DCM'))
+        Estimate_DCM(directory);
+        return;
+    end
+
+else
+    job_file_name=strcat(directory,'\GLM\',job_name,'_',controls_names(i).name,'_job.m');
+    Time_series(job_file_name,directory,job_name); 
+
+end    
+    
+cd(strcat(directory,'\GLM'));
+nrun = 1; % enter the number of runs here
+jobfile = {job_file_name};
+jobs = repmat(jobfile, 1, nrun);
+inputs = cell(0, nrun);
+for crun = 1:nrun
+end
+spm('defaults', 'FMRI');
+spm_jobman('run', jobs, inputs{:});
+cd(orig_directory);
+
+function GLM_Define(job_file_name,directory)
+global orig_directory;
+fid=fopen(job_file_name,'w');
+fprintf(fid,'matlabbatch{%d}.spm.stats.fmri_spec.dir = {''%s''};\n',1,strcat(directory,'\GLM'));
+fprintf(fid,'matlabbatch{%d}.spm.stats.fmri_spec.timing.units = ''scans'';\n',1);
+fprintf(fid,'matlabbatch{%d}.spm.stats.fmri_spec.timing.RT = 2.5;\n',1);
+fprintf(fid,'matlabbatch{%d}.spm.stats.fmri_spec.timing.fmri_t = 16;\n',1);
+fprintf(fid,'matlabbatch{%d}.spm.stats.fmri_spec.timing.fmri_t0 = 8;\n\n',1);
+fprintf(fid,'matlabbatch{%d}.spm.stats.fmri_spec.sess.scans = {',1);
+cd(strcat(directory,'\func'));
+fMRI_directory=fullfile(strcat(directory,'\func'),'*.img');
+fMRI_files=dir(fMRI_directory);
+for i=1:150
+          fprintf(fid,'\n''%s\\%s,1''',strcat(directory,'\func'),fMRI_files(i).name);
+end
+fprintf(fid,'};');
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_spec.sess.cond = struct(''name'', {}, ''onset'', {}, ''duration'', {}, ''tmod'', {}, ''pmod'', {}, ''orth'', {});',1);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_spec.sess.multi = {''''};',1);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_spec.sess.regress = struct(''name'', {}, ''val'', {});',1);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_spec.sess.multi_reg = {''''};',1);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_spec.sess.hpf = 128;',1);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_spec.fact = struct(''name'', {}, ''levels'', {});',1);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_spec.bases.hrf.derivs = [0 0];',1);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_spec.volt = 1',1);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_spec.global = ''None'';',1);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_spec.mthresh = 0.8;',1);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_spec.mask = {''''};',1);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_spec.cvi = ''AR(1)'';',1);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_est.spmmat(%d) = cfg_dep(''fMRI model specification: SPM.mat File'', substruct(''.'',''val'', ''{}'',{%d}, ''.'',''val'', ''{}'',{1}, ''.'',''val'', ''{}'',{1}), substruct(''.'',''spmmat''));',2,1,1);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_est.write_residuals = 0;',2);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_est.method.Classical = 1;',2);
+fclose(fid);
+cd(orig_directory);
+
+function CSF_Extract(job_file_name,directory)
+global orig_directory;
+fid=fopen(job_file_name,'w');
+fprintf(fid,'matlabbatch{%d}.spm.util.voi.spmmat = {''%s''};\n',1,strcat(directory,'\GLM\SPM.mat'));
+fprintf(fid,'matlabbatch{%d}.spm.util.voi.adjust = NaN;',1);
+fprintf(fid,'matlabbatch{%d}.spm.util.voi.session = 1;',1);
+fprintf(fid,'matlabbatch{%d}.spm.util.voi.name = ''%s'';',1,'CSF');
+fprintf(fid,'matlabbatch{%d}.spm.util.voi.roi{%d}.sphere.centre = [%d %d %d];',1,1,0,-40,-5); %Center of CSF sphere
+fprintf(fid,'matlabbatch{%d}.spm.util.voi.roi{%d}.sphere.radius = %d;',1,1,4);                %Radius of CSF sphere
+fprintf(fid,'matlabbatch{%d}.spm.util.voi.roi{%d}.sphere.move.fixed = %d;',1,1,1);
+fprintf(fid,'matlabbatch{%d}.spm.util.voi.roi{%d}.mask.image = {''%s,1''};',1,2,strcat(directory,'\GLM\mask.nii'));
+fprintf(fid,'matlabbatch{%d}.spm.util.voi.roi{%d}.mask.threshold = 0.5;',1,2);
+fprintf(fid,'matlabbatch{%d}.spm.util.voi.expression = ''i1&i2'';',1);
+fclose(fid);
+cd(orig_directory);
+
+function Adjust_SPM(job_file_name,directory)
+global orig_directory;
+fid=fopen(job_file_name,'w');
+fprintf(fid,'matlabbatch{%d}.spm.stats.fmri_spec.dir = {''%s''};\n',1,strcat(directory,'\GLM'));
+fprintf(fid,'matlabbatch{%d}.spm.stats.fmri_spec.timing.units = ''scans'';\n',1);
+fprintf(fid,'matlabbatch{%d}.spm.stats.fmri_spec.timing.RT = 2.5;\n',1);
+fprintf(fid,'matlabbatch{%d}.spm.stats.fmri_spec.timing.fmri_t = 16;\n',1);
+fprintf(fid,'matlabbatch{%d}.spm.stats.fmri_spec.timing.fmri_t0 = 8;\n\n',1);
+fprintf(fid,'matlabbatch{%d}.spm.stats.fmri_spec.sess.scans = {',1);
+cd(strcat(directory,'\func'));
+fMRI_directory=fullfile(strcat(directory,'\func'),'*.img');
+fMRI_files=dir(fMRI_directory);
+for i=1:150
+          fprintf(fid,'\n''%s\\%s,1''',strcat(directory,'\func'),fMRI_files(i).name);
+end
+fprintf(fid,'};');
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_spec.sess.cond = struct(''name'', {}, ''onset'', {}, ''duration'', {}, ''tmod'', {}, ''pmod'', {}, ''orth'', {});',1);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_spec.sess.multi = {''''};',1);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_spec.sess.regress = struct(''name'', {}, ''val'', {});',1);
+covariate1=dir(fullfile(strcat(directory,'\GLM'),'*.txt'));
+covariate2=strcat(directory,'\GLM\VOI_CSF_1.mat');
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_spec.sess.multi_reg = {''%s''\n''%s''};',1,covariate1.name,covariate2);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_spec.sess.hpf = 128;',1);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_spec.fact = struct(''name'', {}, ''levels'', {});',1);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_spec.bases.hrf.derivs = [0 0];',1);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_spec.volt = 1',1);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_spec.global = ''None'';',1);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_spec.mthresh = 0.8;',1);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_spec.mask = {''''};',1);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_spec.cvi = ''AR(1)'';',1);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_est.spmmat(%d) = cfg_dep(''fMRI model specification: SPM.mat File'', substruct(''.'',''val'', ''{}'',{%d}, ''.'',''val'', ''{}'',{1}, ''.'',''val'', ''{}'',{1}), substruct(''.'',''spmmat''));',2,1,1);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_est.write_residuals = 0;',2);
+fprintf(fid,'\nmatlabbatch{%d}.spm.stats.fmri_est.method.Classical = 1;',2);
+fclose(fid);
+cd(orig_directory);
+
+
+function Time_series(job_file_name,directory,region)
+global orig_directory;
+fid=fopen(job_file_name,'w');
+fprintf(fid,'matlabbatch{%d}.spm.util.voi.spmmat = {''%s''};\n',1,strcat(directory,'\GLM\SPM.mat'));
+fprintf(fid,'matlabbatch{%d}.spm.util.voi.adjust = NaN;',1);
+fprintf(fid,'matlabbatch{%d}.spm.util.voi.session = 1;',1);
+fprintf(fid,'matlabbatch{%d}.spm.util.voi.name = ''%s'';',1,region);
+fprintf(fid,'matlabbatch{%d}.spm.util.voi.roi{%d}.mask.image = {''%s,1''};',1,1,strcat(directory,'\ROI\',region,'.nii'));
+fprintf(fid,'matlabbatch{%d}.spm.util.voi.roi{%d}.mask.threshold = 0.5;',1,1);
+fprintf(fid,'matlabbatch{%d}.spm.util.voi.roi{%d}.mask.image = {''%s,1''};',1,2,strcat(directory,'\GLM\mask.nii'));
+fprintf(fid,'matlabbatch{%d}.spm.util.voi.roi{%d}.mask.threshold = 0.5;',1,2);
+fprintf(fid,'matlabbatch{%d}.spm.util.voi.expression = ''i1&i2'';',1);
+fclose(fid);
+cd(orig_directory);
+
+function Specify_DCM_Models(directory)
+global Controls_folder controls_names orig_directory Patients_folder patients_names regions;
+SPM=strcat(directory,'\GLM\SPM.mat');
+xY=[];
+global max_model;
+max_model=8;            %Enter the total number of models in the DCM Analysis
+for model_num=1:max_model
+    DCM=Vineeth_DCM_model_specific(model_num,directory,SPM,xY,regions);
+end
+cd(orig_directory);
+
+function Estimate_DCM(directory)
+global Patients_folder patients_names Controls_folder controls_names orig_directory ;
+global max_model;
+cd(strcat(directory,'\GLM'));
+    for i=1:max_model
+        file=strcat('DCM_',num2str(i));
+        spm_dcm_estimate(file);
+    end
+cd(orig_directory);    
+
+% --- Executes on button press in Start_DCM_N2_PB.
+function Start_DCM_N2_PB_Callback(hObject, eventdata, handles)
+% hObject    handle to Start_DCM_N2_PB (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% global Patients_folder patients_names Controls_folder controls_names orig_directory;
+% 
+% for i=3:length(controls_names)
+%     directory=strcat(Controls_folder,'\',controls_names(i).name);
+%     cd(strcat(directory,'\GLM'));
+%     for i=1:10
+%         file=strcat('DCM_',num2str(i));
+%         spm_dcm_estimate(file);
+%     end
+
+
+% --- Executes on button press in Generate_Report_PB.
+function Generate_Report_PB_Callback(hObject, eventdata, handles)
+% hObject    handle to Generate_Report_PB (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global Controls_folder controls_names orig_directory Patients_folder patients_names regions;
+Controls_folder='F:\Vineeth_DCM\Controls_Data_8-Model_DMN\Controls_Data';
+controls_names=dir(Controls_folder);
+for i=3:length(controls_names)
+    GLM_folder=strcat(Controls_folder,'\',controls_names(i).name,'\GLM');
+    job_file_name=strcat(GLM_folder,'\Bayesian_Model_Averaging_',controls_names(i).name,'_job.m');
+
+% matlabbatch{1}.spm.dcm.bms.inference.dir = {'E:\DCM_4_node_model\Controls_Data_new_models\ANISH_R\GLM'};
+% matlabbatch{1}.spm.dcm.bms.inference.sess_dcm{1}.dcmmat = {
+%                                                            'E:\DCM_4_node_model\Controls_Data_new_models\ANISH_R\GLM\DCM_1.mat'
+%                                                            'E:\DCM_4_node_model\Controls_Data_new_models\ANISH_R\GLM\DCM_2.mat'
+%                                                            'E:\DCM_4_node_model\Controls_Data_new_models\ANISH_R\GLM\DCM_3.mat'
+%                                                            };
+% matlabbatch{1}.spm.dcm.bms.inference.model_sp = {''};
+% matlabbatch{1}.spm.dcm.bms.inference.load_f = {''};
+% matlabbatch{1}.spm.dcm.bms.inference.method = 'RFX';
+% matlabbatch{1}.spm.dcm.bms.inference.family_level.family_file = {''};
+% matlabbatch{1}.spm.dcm.bms.inference.bma.bma_yes.bma_famwin = 'famwin';
+% matlabbatch{1}.spm.dcm.bms.inference.verify_id = 1;
+    cd(GLM_folder);
+    fid=fopen(job_file_name,'w');
+    fprintf(fid,'matlabbatch{%d}.spm.dcm.bms.inference.dir = {''%s''};\n',1,GLM_folder);
+    fprintf(fid,'\nmatlabbatch{%d}.spm.dcm.bms.inference.sess_dcm{1}.dcmmat = { ''%s''\n''%s''\n''%s''\n''%s''\n''%s''\n''%s''\n''%s''\n''%s''\n };',1,strcat(GLM_folder,'\DCM_1.mat'),strcat(GLM_folder,'\DCM_2.mat'),strcat(GLM_folder,'\DCM_3.mat'),strcat(GLM_folder,'\DCM_4.mat'),strcat(GLM_folder,'\DCM_5.mat'),strcat(GLM_folder,'\DCM_6.mat'),strcat(GLM_folder,'\DCM_7.mat'),strcat(GLM_folder,'\DCM_8.mat'));
+    fprintf(fid,'\nmatlabbatch{%d}.spm.dcm.bms.inference.model_sp = {''''};',1);
+    fprintf(fid,'\nmatlabbatch{%d}.spm.dcm.bms.inference.load_f = {''''};',1);
+    fprintf(fid,'\nmatlabbatch{%d}.spm.dcm.bms.inference.method = ''RFX'';',1);
+    fprintf(fid,'\nmatlabbatch{%d}.spm.dcm.bms.inference.family_level.family_file = {''''};',1);
+    fprintf(fid,'\nmatlabbatch{%d}.spm.dcm.bms.inference.bma.bma_yes.bma_famwin = ''famwin'';',1);
+    fprintf(fid,'\nmatlabbatch{%d}.spm.dcm.bms.inference.verify_id = %d;',1,1);
+    fclose(fid);
+    
+    
+    
+    nrun = 1; % enter the number of runs here
+    jobfile = {job_file_name};
+    jobs = repmat(jobfile, 1, nrun);
+    inputs = cell(0, nrun);
+    for crun = 1:nrun
+    end
+    spm('defaults', 'FMRI');
+    spm_jobman('run', jobs, inputs{:});
+    
+    BMS_data=load('BMS.mat');
+    xlswrite(strcat(orig_directory,'\DCM_DMN_Results.xlsx'),[BMS_data.BMS.DCM.rfx.bma.mEp.A(3,4),BMS_data.BMS.DCM.rfx.bma.mEp.A(2,3),BMS_data.BMS.DCM.rfx.bma.mEp.A(1,2)],1,strcat('D',int2str(i+30)))
+    xlswrite(strcat(orig_directory,'\DCM_DMN_Results.xlsx'),{controls_names(i).name},1,strcat('A',int2str(i+30)))
+    cd(orig_directory);
+end

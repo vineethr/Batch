@@ -1,0 +1,175 @@
+function DCM = Vineeth_DCM_model_param_spec(model_num,directory,SPM,xY,regions)
+%Code for 8 model DCM with 4 nodes designed to test DMN networks on
+%Controls
+if nargin < 2 || isempty(xY)
+    swd = SPM.swd;
+    reg_1=regions(1);
+    reg_2=regions(2);
+    reg_3=regions(3);
+    reg_4=regions(4);
+    %[P, sts] = spm_select([1 8],'^VOI.*\.mat$',{'select VOIs'},'',swd)
+    P={
+        strcat(directory,'\GLM\VOI_',reg_1{1},'_1.mat');
+        strcat(directory,'\GLM\VOI_',reg_2{1},'_1.mat');
+        strcat(directory,'\GLM\VOI_',reg_3{1},'_1.mat');
+        strcat(directory,'\GLM\VOI_',reg_4{1},'_1.mat')
+        }
+    P=char(P);
+    sts=1;
+    if ~sts, DCM = []; return; end
+    P     = cellstr(P);
+    m     = numel(P);
+    xY    = [];
+    for i = 1:m
+        p  = load(P{i},'xY');
+        xY = spm_cat_struct(xY,p.xY);
+    end
+else
+    m = numel(xY);
+end
+Sess   = SPM.Sess(xY(1).Sess);
+if isempty(Sess.U)
+    nc = 0;
+    U = [];
+else
+    U.dt   = Sess.U(1).dt;
+    u      = length(Sess.U);
+    U.name = {};
+    U.u    = [];
+    for  i = 1:u
+        for j = 1:length(Sess.U(i).name)
+            str = ['include ' Sess.U(i).name{j} '?'];
+            if spm_input(str,'+1','y/n',[1 0],1)
+                U.u             = [U.u Sess.U(i).u(33:end,j)];
+                U.name{end + 1} = Sess.U(i).name{j};
+            end
+        end
+    end
+    nc     = size(U.u,2);
+end
+RT     = SPM.xY.RT;
+t0     = spm_get_defaults('stats.fmri.t0');
+t      = spm_get_defaults('stats.fmri.t');
+delays=[1.2500;1.2500;1.2500;1.2500;1.2500;1.2500]
+TE    = 0.03;
+    options.nonlinear  = 0;
+    options.two_state  = 0;
+    options.stochastic = 1;
+    options.centre     = 1;
+a     = zeros(m,m);
+b     = zeros(m,m,nc);
+c     = zeros(m,nc);
+d     = zeros(m,m,0);
+%Enter connection
+if(model_num==1)
+    a=[1 1 1 1;
+       1 1 1 1;
+       1 1 1 1;
+       1 1 1 1];
+elseif(model_num==2)
+    a=[1 1 1 1;
+       1 1 1 1;
+       1 1 1 1;
+       0 0 0 1];
+elseif(model_num==3)
+    a=[1 1 1 1;
+       1 1 1 1;
+       0 0 1 0;
+       1 1 1 1];
+elseif(model_num==4)
+    a=[1 1 0 0;
+       1 1 0 0;
+       1 1 1 1;
+       1 1 1 1];
+elseif(model_num==5)
+    a=[1 0 1 1;
+       0 1 1 1;
+       1 1 1 1;
+       1 1 1 1];
+elseif(model_num==6)
+    a=[1 0 1 1;
+       0 1 1 1;
+       1 1 1 1;
+       0 0 0 1];
+elseif(model_num==7)
+    a=[1 0 1 1;
+       0 1 1 1;
+       0 0 1 0;
+       1 1 1 1];
+elseif(model_num==8)
+    a=[1 0 0 0;
+       0 1 0 0;
+       1 1 1 1;
+       1 1 1 1];
+elseif(model_num==9)
+    a=[1 0 0 0 0 0;
+       0 1 0 0 0 0;
+       0 0 1 0 1 0;
+       0 0 0 1 0 1;
+       0 1 1 0 1 0;
+       1 0 0 1 0 1];
+elseif(model_num==10)
+    a=[1 0 0 0 0 1;
+       0 1 0 0 1 0;
+       0 0 1 0 1 0;
+       0 0 0 1 0 1;
+       0 0 1 0 1 0;
+       0 0 0 1 0 1];
+elseif(model_num==11)
+    a=[1 0 0 0 0 0;
+       0 1 0 0 0 0;
+       0 0 1 0 0 0;
+       0 0 0 1 0 0;
+       0 0 1 0 1 0;
+       0 0 0 1 0 1];
+elseif(model_num==12)
+    a=[1 0 0 0 0 1;
+       0 1 0 0 1 0;
+       0 0 1 0 0 0;
+       0 0 0 1 0 0;
+       0 0 0 0 1 0;
+       0 0 0 0 0 1];
+elseif(model_num==13)
+    a=[1 0 0 0 0 0;
+       0 1 0 0 0 0;
+       0 0 1 0 1 0;
+       0 0 0 1 0 1;
+       0 0 0 0 1 0;
+       0 0 0 0 0 1];
+elseif(model_num==14)
+    a=[1 0 0 0 0 0;
+       0 1 0 0 0 0;
+       0 0 1 0 0 0;
+       0 0 0 1 0 0;
+       0 1 0 0 1 0;
+       1 0 0 0 0 1];
+end
+
+n     = length(xY);                      % number of regions
+v     = length(xY(1).u);                 % number of time points
+Y.dt  = SPM.xY.RT;
+Y.X0  = xY(1).X0;
+for i = 1:n
+    Y.y(:,i)  = xY(i).u;
+    Y.name{i} = xY(i).name;
+end
+Y.Q        = spm_Ce(ones(1,n)*v);
+
+if isempty(U)
+    U.u    = zeros(v,1);
+    U.name = {'null'};
+end
+DCM.a       = a;
+DCM.b       = b;
+DCM.c       = c;
+DCM.d       = d;
+DCM.U       = U;
+DCM.Y       = Y;
+DCM.xY      = xY;
+DCM.v       = v;
+DCM.n       = n;
+DCM.TE      = TE;
+DCM.delays  = delays;
+DCM.options = options;
+end
+

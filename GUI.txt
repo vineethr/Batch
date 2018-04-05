@@ -1288,11 +1288,11 @@ function Start_DCM_N1_PB_Callback(hObject, eventdata, handles)
 % List of open inputs
 global Patients_folder patients_names Controls_folder controls_names orig_directory regions;
 cd(orig_directory);
-region_1='LIPC';
-region_2='RIPC';
-region_3='PCC';
-region_4='mPFC';
-regions={region_1;region_2;region_3;region_4};
+region_1='C7b_R';
+region_2='STN_L';
+region_3='Put_L';
+%region_4='mPFC';
+regions={region_1;region_2;region_3};
 for i=3:length(controls_names)                  
     job_create('GLM_Define',i,'Controls',0);                        %If the job is time series extraction of ROIs, pass the last argument as 1, else 0
     job_create('CSF_Extract',i,'Controls',0);
@@ -1300,7 +1300,7 @@ for i=3:length(controls_names)
     job_create(region_1,i,'Controls',1);
     job_create(region_2,i,'Controls',1);
     job_create(region_3,i,'Controls',1);
-    job_create(region_4,i,'Controls',1);
+    %job_create(region_4,i,'Controls',1);
 end
 for i=3:length(controls_names)
     job_create('Specify_Model',i,'Controls',0);
@@ -1456,7 +1456,7 @@ global Controls_folder controls_names orig_directory Patients_folder patients_na
 SPM=strcat(directory,'\GLM\SPM.mat');
 xY=[];
 global max_model;
-max_model=8;            %Enter the total number of models in the DCM Analysis
+max_model=3;            %Enter the total number of models in the DCM Analysis
 for model_num=1:max_model
     DCM=Vineeth_DCM_model_specific(model_num,directory,SPM,xY,regions);
 end

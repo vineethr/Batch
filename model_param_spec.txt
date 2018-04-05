@@ -6,13 +6,13 @@ if nargin < 2 || isempty(xY)
     reg_1=regions(1);
     reg_2=regions(2);
     reg_3=regions(3);
-    reg_4=regions(4);
+    %reg_4=regions(4);
     %[P, sts] = spm_select([1 8],'^VOI.*\.mat$',{'select VOIs'},'',swd)
     P={
         strcat(directory,'\GLM\VOI_',reg_1{1},'_1.mat');
         strcat(directory,'\GLM\VOI_',reg_2{1},'_1.mat');
         strcat(directory,'\GLM\VOI_',reg_3{1},'_1.mat');
-        strcat(directory,'\GLM\VOI_',reg_4{1},'_1.mat')
+        %strcat(directory,'\GLM\VOI_',reg_4{1},'_1.mat')
         }
     P=char(P);
     sts=1;
@@ -62,20 +62,29 @@ c     = zeros(m,nc);
 d     = zeros(m,m,0);
 %Enter connection
 if(model_num==1)
-    a=[1 1 1 1;
-       1 1 1 1;
-       1 1 1 1;
-       1 1 1 1];
+%     a=[1 1 1 1;
+%        1 1 1 1;
+%        1 1 1 1;
+%        1 1 1 1];
+      a=[1 0 0;
+         1 1 0;
+         0 1 1;] 
 elseif(model_num==2)
-    a=[1 1 1 1;
-       1 1 1 1;
-       1 1 1 1;
-       0 0 0 1];
+      a=[1 1 0;
+         1 1 1;
+         0 1 1;]
+%     a=[1 1 1 1;
+%        1 1 1 1;
+%        1 1 1 1;
+%        0 0 0 1];
 elseif(model_num==3)
-    a=[1 1 1 1;
-       1 1 1 1;
-       0 0 1 0;
-       1 1 1 1];
+      a=[1 1 0;
+         0 1 1;
+         0 0 1;]
+%     a=[1 1 1 1;
+%        1 1 1 1;
+%        0 0 1 0;
+%        1 1 1 1];
 elseif(model_num==4)
     a=[1 1 0 0;
        1 1 0 0;
